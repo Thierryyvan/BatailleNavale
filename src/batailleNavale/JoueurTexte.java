@@ -47,6 +47,7 @@ public class JoueurTexte extends JoueurAvecGrille {
 	    }
 
 	}
+	@Override
 	public Coordonnee choixAttaque() {
 		while (true) {
 			System.out.println("Entrez les coordonees de votre attaque (Ex: B7) : ");

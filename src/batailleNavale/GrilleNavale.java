@@ -7,12 +7,6 @@ package batailleNavale;
  * @author Louis
  * @author Ziang
  * @author Aleksei
- *
- * @param navires : tableau des navires presents sur la grille
- * @param nbNavires : nombre de navires presents sur la grille
- * @param taille : taille de la grille (taille x taille)
- * @param tirsRecus : tableau des coordonnees des tirs recus
- * @param nbTirsRecus : nombre de tirs recus
  */
 public class GrilleNavale {
 	private Navire[] navires;
@@ -40,14 +34,14 @@ public class GrilleNavale {
 		
 		for (int i = 0; i < taillesNavires.length; i++) {
 			if (taillesNavires[i] < 1) {
-				throw new IllegalArgumentException("La taille d'un navire doit ï¿½tre supï¿½rieure ï¿½ 1"); // A revoir pour une taille max
+				throw new IllegalArgumentException("La taille d'un navire doit etre superieure a1"); // A revoir pour une taille max
 			}	
 		}
 		nbNavires = 0;
 		navires = new Navire[taillesNavires.length];
 		nbTirsRecus = 0;
 		tirsRecus = new Coordonnee[taille * taille];
-		placementsAuto(taillesNavires); //TODO 
+		//placementsAuto(taillesNavires); //TODO 
 	}
 	
 	public GrilleNavale(int taille, int nbNavires) {
@@ -69,25 +63,59 @@ public class GrilleNavale {
 	
 	public String toString() {
 		StringBuffer sb = new StringBuffer();
-		// Crï¿½ation de l'entï¿½te
-		sb.append("  ");
-		for (int i = 0; i < taille; i++) {
-			sb.append(""+(char) ('A'+i)+" ");
-		}
-		sb.append("\n");
-		// Crï¿½ation des indices de lignes
-		for (int i = 1; i <= taille; i++) {
-			if (i < 10) {
-				sb.append(" " + i + " ");
-			} else {
-				sb.append(i + " ");
-			}
-			for (int j = 0; j < taille; j++) {
-				sb.append(" .");
+		
+		// Créer la grille de base \\
+		
+		// Mettre la première ligne de lettres
+		sb.append("  "); // espace vide pour alignement
+		for(int i = 0; i < taille; i++) 
+			sb.append(" "+(char) ('A'+ i)+" ");
+		
+		// Ajouter les autres lignes 
+		
+		for(int i = 1; i <= taille; i++) {
+			sb.append("\n");
+			
+			// Ajouter un espace avant les nombres à 1 chiffre pour aligner, et mettre le n° de ligne
+			if(i < 10) 
+				sb.append(" "+ i);
+			else 
+				sb.append(i);
+			
+			// Ajouter les points
+			for(int j = 1; j <= taille; j++) {
+				Coordonnee caseActuelle = new Coordonnee(i,j);
+				boolean tirRecu = false;
+				for (int t = 0; t < nbTirsRecus; t++) {
+					if (tirsRecus[t].equals(caseActuelle)) {
+						tirRecu = true;
+						break;
+					}
+				}
+				boolean occupe = false;
+				boolean touche = false;
+				for (int n = 0; n < nbNavires; n++) {
+					if (navires[n].contient(caseActuelle)) {
+						occupe = true;
+						if (navires[n].estTouche(caseActuelle)) {
+							touche = true;
+						}
+						break;
+					}
+				}
+				char symbole = '.';
+				if (tirRecu) {
+					symbole = touche ? 'X' : 'O';
+				} else if (occupe) {
+					symbole = '#';
+				} else {
+					symbole = '.';
+				}
+				sb.append(" " + symbole + " ");
 			}
 			
-			sb.append("\n");
 		}
+			
 		return sb.toString();
 		
 	}
@@ -96,8 +124,160 @@ public class GrilleNavale {
 		return taille;
 	}
 	public boolean ajouteNavire(Navire n) {
+		if (n.getDebut().getLigne() < 1 || n.getDebut().getLigne() > taille
+				|| n.getDebut().getColonne() < 1 || n.getDebut().getColonne() > taille
+				|| n.getFin().getLigne() < 1 || n.getFin().getLigne() > taille
+				|| n.getFin().getColonne() < 1 || n.getFin().getColonne() > taille) {
+			return false;
+		}
 		
+		for (int i = 0; i < nbNavires; i++) {
+			if (n.touche(navires[i]) || n.chevauche(navires[i])) {
+				return false;
+			}
+		}
+		
+		navires[nbNavires] = n;
+		nbNavires++;
+		return true;
 	}
+	public void placementAuto(int[] taillesNavires) {
+		java.util.Random rand = new java.util.Random();
+		for (int tailleNavire : taillesNavires) {
+			boolean place = false;
+			while (!place) {
+				Navire n = randomNavire(tailleNavire, rand);
+				place = ajouteNavire(n);
+			}
+		}
+	}
+	private Navire randomNavire(int tailleNavire, java.util.Random rand) {
+		boolean estVertical = rand.nextBoolean();
+		int Rlig, Rcol;
+		
+		if (estVertical) {
+			Rlig = 1 + rand.nextInt(taille - tailleNavire + 1);
+			Rcol = 1 + rand.nextInt(taille);
+		} else {
+			Rlig = 1 + rand.nextInt(taille);
+			Rcol = 1 + rand.nextInt(taille - tailleNavire + 1);
+		}
+		return new Navire(new Coordonnee (Rlig, Rcol), tailleNavire, estVertical);
+	}
+	private boolean estDansGrille(Coordonnee c) {
+	    int ligne = c.getLigne();
+	    int colonne = c.getColonne();
+
+	    // Vérifier si la ligne et la colonne sont dans les bornes valides
+	    return ligne >= 1 && ligne <= taille && colonne >= 1 && colonne <= taille;
+	}
+	private boolean estDansTirsRecus(Coordonnee c) {
+	    // Parcourir le tableau des tirs reçus
+	    for (int i = 0; i < nbTirsRecus; i++) {
+	        // Vérifier si la coordonnée c correspond à un tir reçu
+	        if (tirsRecus[i].equals(c)) {
+	            return true;
+	        }
+	    }
+	    // Si aucune coordonnée ne correspond, retourner false
+	    return false;
+	}
+	private boolean ajouteDansTirsRecus(Coordonnee c) {
+	    // Vérifier si la coordonnée est dans la grille
+	    if (!this.estDansGrille(c)) {
+	        return false;
+	    }
+
+	    // Vérifier si la coordonnée est déjà présente dans tirsRecus
+	    if (estDansTirsRecus(c)) {
+	        return false; // La coordonnée a déjà été tirée
+	    }
+
+	    // Ajouter la coordonnée dans le premier emplacement vide de tirsRecus
+	    for (int i = 0; i < this.tirsRecus.length; i++) {
+	        if (this.tirsRecus[i] == null) { // Si l'emplacement est vide
+	            this.tirsRecus[i] = c;  // Ajouter la coordonnée
+	            this.nbTirsRecus++;      // Augmenter le nombre de tirs reçus
+	            return true;             // Retourner true pour indiquer que la liste a été modifiée
+	        }
+	    }
+
+	    return false; // Si on a parcouru tout le tableau sans trouver de place
+	}
+	public boolean recoitTir(Coordonnee c) {
+	    // Vérifier si la coordonnée a déjà été reçue
+	    if (estDansTirsRecus(c)) {
+	        return false; // Si la coordonnée a déjà été reçue, ne rien faire et retourner false
+	    }
+
+	    // Ajouter la coordonnée aux tirs reçus
+	    if (!ajouteDansTirsRecus(c)) {
+	        return false; // Si l'ajout échoue (par exemple, tableau plein), retourner false
+	    }
+
+	    // Vérifier si la coordonnée touche un navire
+	    for (int i = 0; i < nbNavires; i++) {
+	        if (navires[i] != null && navires[i].recoitTir(c)) {
+	            // Si le navire contient la coordonnée et reçoit le tir, retourner true
+	            return true;
+	        }
+	    }
+
+	    // Si aucun navire n'a été touché, retourner false
+	    return false;
+	}
+	public boolean estTouche(Coordonnee c) {
+	    // Parcourir tous les navires de la grille
+	    for (int i = 0; i < nbNavires; i++) {
+	        if (navires[i] != null && navires[i].contient(c)) {
+	            // Si la coordonnée est dans le navire et que ce navire a été touché à cette coordonnée
+	            if (navires[i].estTouche(c)) {
+	                return true; // Un navire a été touché à la coordonnée c
+	            }
+	        }
+	    }
+	    // Aucun navire n'a été touché à la coordonnée c
+	    return false;
+	}
+	public boolean estALEau(Coordonnee c) {
+	    // Vérifier si la coordonnée est un tir reçu
+	    if (!estDansTirsRecus(c)) {
+	        return false; // Si la coordonnée n'est pas un tir reçu, retourner false
+	    }
+
+	    // Vérifier que le tir ne touche pas un navire
+	    if (estTouche(c)) {
+	        return false; // Si la coordonnée touche un navire, ce n'est pas de l'eau
+	    }
+
+	    // Si la coordonnée est un tir reçu et ne touche pas un navire, c'est de l'eau
+	    return true;
+	}
+	public boolean estCoule(Coordonnee c) {
+	    // Parcourir tous les navires de la grille
+	    for (int i = 0; i < nbNavires; i++) {
+	        if (navires[i] != null && navires[i].contient(c)) {
+	            // Si le navire contient la coordonnée et que le navire est coulé
+	            if (navires[i].estTouche(c) && navires[i].estCoule()) {
+	                return true; // Le navire est coulé
+	            }
+	        }
+	    }
+	    // Aucun navire n'a été touché ou coulé à la coordonnée c
+	    return false;
+	}
+	public boolean perdu() {
+	    // Parcourir tous les navires
+	    for (int i = 0; i < nbNavires; i++) {
+	        if (navires[i] != null && !navires[i].estCoule()) {
+	            return false; // Si un navire n'est pas coulé, retourner false
+	        }
+	    }
+	    // Si tous les navires ont été coulés, retourner true
+	    return true;
+	}
+
+	
 	
 }
 
@@ -113,36 +293,3 @@ public class GrilleNavale {
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
->>>>>>> 97c25796a5846888fe14dfae2498a0c38112623c

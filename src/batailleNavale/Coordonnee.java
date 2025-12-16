@@ -56,11 +56,7 @@ public class Coordonnee implements Comparable<Coordonnee> {
 
  
     public boolean equals(Object obj) {
-        // Si les deux références pointent vers le même objet
-        if (this == obj) return true;
-
-        // Si l'objet passé en paramètre n'est pas une Coordonnee
-        if (!(obj instanceof Coordonnee)) return false;
+    	if (!(obj instanceof Coordonnee)) return false;
 
         // Conversion de l'objet en Coordonnee
         Coordonnee c = (Coordonnee) obj;
@@ -72,14 +68,10 @@ public class Coordonnee implements Comparable<Coordonnee> {
    
     public boolean voisine(Coordonnee c) {
         if (this.colonne==c.colonne){
-            c.ligne=this.ligne+1;
-            c.ligne=this.ligne-1;
-            return true;
+            return (c.ligne==this.ligne+1) || (c.ligne==this.ligne-1);
         }
         if(c.ligne==this.ligne){
-            c.colonne=this.colonne+1;
-            c.colonne=this.colonne-1;
-            return true;
+            return (c.colonne==this.colonne+1) || (c.colonne==this.colonne-1);
         }
         return false;
     }

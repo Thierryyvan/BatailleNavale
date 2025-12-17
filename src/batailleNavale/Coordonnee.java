@@ -15,24 +15,44 @@ public class Coordonnee implements Comparable<Coordonnee> {
     // Constructeur n°1
     // Permet de créer une coordonnée à partir de deux entiers
     public Coordonnee(int ligne, int colonne) {
-        // Affecte la valeur du paramètre ligne à l'attribut ligne
+        if (ligne < 1 || colonne < 1) {
+            throw new IllegalArgumentException("Coordonnée invalide");
+        }
         this.ligne = ligne;
-
-        // Affecte la valeur du paramètre colonne à l'attribut colonne
         this.colonne = colonne;
     }
+
 
     // Constructeur n°2
     // Permet de créer une coordonnée à partir d'une chaîne de caractères
     // Exemple : "A5"
     public Coordonnee(String s) {
-        // Convertit la première lettre (ex : 'A') en indice de ligne
-        // 'A' devient 0, 'B' devient 1, etc.
-        this.ligne = s.charAt(0) - 'A';
+        if (s == null || s.length() < 2) {
+            throw new IllegalArgumentException("Coordonnée invalide");
+        }
 
-        // Convertit la partie numérique de la chaîne (ex : "5") en entier
-        this.colonne = Integer.parseInt(s.substring(1));
+        s = s.trim().toUpperCase();
+
+        char lettre = s.charAt(0);
+        if (lettre < 'A' || lettre > 'Z') {
+            throw new IllegalArgumentException("Lettre invalide");
+        }
+
+        // Colonne : A -> 1, B -> 2, ...
+        this.colonne = lettre - 'A' + 1;
+
+        try {
+            // Ligne : partie numérique
+            this.ligne = Integer.parseInt(s.substring(1));
+        } catch (NumberFormatException e) {
+            throw new IllegalArgumentException("Numéro de ligne invalide");
+        }
+
+        if (ligne < 1 || colonne < 1) {
+            throw new IllegalArgumentException("Coordonnée hors grille");
+        }
     }
+
 
     // Accesseur (getter) pour la ligne
     public int getLigne() {

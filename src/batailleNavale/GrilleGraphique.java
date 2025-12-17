@@ -38,6 +38,8 @@ public class GrilleGraphique extends JPanel implements ActionListener {
 	 * Null si aucune selection en cours
 	 */
 	private Coordonnee coordonneeSelectionnee;
+	
+	
 
 	/**
 	 * Initialise une grille carrée de taille donnée

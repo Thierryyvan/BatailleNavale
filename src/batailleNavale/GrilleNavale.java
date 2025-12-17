@@ -25,23 +25,23 @@ public class GrilleNavale {
 		}
 		
 		if (taille > 26 || taille < 2) {
-			throw new IllegalArgumentException("Taille de la grille incompatible");
+			throw new IllegalArgumentException("La Taille de la grille est incompatible");
 		} else if (taille < tailleMax) {
-			throw new IllegalArgumentException("Taille de la grille incompatible");
+			throw new IllegalArgumentException("La grille ne peut pas supporter la taille " + tailleMax);
 		} else {
 			this.taille = taille; 
 		}
 		
 		for (int i = 0; i < taillesNavires.length; i++) {
 			if (taillesNavires[i] < 1) {
-				throw new IllegalArgumentException("La taille d'un navire doit etre superieure a1"); // A revoir pour une taille max
+				throw new IllegalArgumentException("La taille des navire doit etre superieure a 1"); // A revoir pour une taille max
 			}	
 		}
 		nbNavires = 0;
 		navires = new Navire[taillesNavires.length];
 		nbTirsRecus = 0;
 		tirsRecus = new Coordonnee[taille * taille];
-		//placementsAuto(taillesNavires); //TODO 
+		placementAuto(taillesNavires); 
 	}
 	
 	public GrilleNavale(int taille, int nbNavires) {
@@ -52,7 +52,7 @@ public class GrilleNavale {
 			this.taille = taille; 
 		}
 		if (nbNavires <= 0) {
-			throw new IllegalArgumentException("il faut au moins un navire pour jouer");
+			throw new IllegalArgumentException("Il faut au moins un navire pour jouer");
 		}
 		this.nbNavires = 0;
 		
@@ -61,29 +61,30 @@ public class GrilleNavale {
 		tirsRecus = new Coordonnee[taille * taille];
 	}
 	
+	@Override
 	public String toString() {
 		StringBuffer sb = new StringBuffer();
 		
-		// Crï¿½er la grille de base \\
+		// Creer la grille de base \\
 		
-		// Mettre la premiï¿½re ligne de lettres
+		// Mettre la premiere ligne de lettres
 		sb.append("  "); // espace vide pour alignement
 		for(int i = 0; i < taille; i++) 
 			sb.append(" "+(char) ('A'+ i)+" ");
 		
 		// Ajouter les autres lignes 
 		
-		for(int i = 1; i <= taille; i++) {
+		for(int i = 0; i < taille; i++) {
 			sb.append("\n");
 			
-			// Ajouter un espace avant les nombres ï¿½ 1 chiffre pour aligner, et mettre le nï¿½ de ligne
-			if(i < 10) 
-				sb.append(" "+ i);
+			// Ajouter un espace avant les nombres a 1 chiffre pour aligner, et mettre le num de ligne
+			if(i + 1 < 10) 
+				sb.append(" "+ (i+1));
 			else 
-				sb.append(i);
+				sb.append(i + 1);
 			
 			// Ajouter les points
-			for(int j = 1; j <= taille; j++) {
+			for(int j = 0; j < taille; j++) {
 				Coordonnee caseActuelle = new Coordonnee(i,j);
 				boolean tirRecu = false;
 				for (int t = 0; t < nbTirsRecus; t++) {
@@ -119,10 +120,12 @@ public class GrilleNavale {
 		return sb.toString();
 		
 	}
+
 	
 	public int getTaille() {
 		return taille;
 	}
+
 	public boolean ajouteNavire(Navire n) {
 		if (n.getDebut().getLigne() < 1 || n.getDebut().getLigne() > taille
 				|| n.getDebut().getColonne() < 1 || n.getDebut().getColonne() > taille
@@ -168,89 +171,87 @@ public class GrilleNavale {
 	    int ligne = c.getLigne();
 	    int colonne = c.getColonne();
 
-	    // Vï¿½rifier si la ligne et la colonne sont dans les bornes valides
-	    return ligne >= 1 && ligne <= taille && colonne >= 1 && colonne <= taille;
+	    // Vérifier si la ligne et la colonne sont dans les bornes valides (indexation commence à 0)
+	    return ligne >= 0 && ligne < taille && colonne >= 0 && colonne < taille;
 	}
+
 	private boolean estDansTirsRecus(Coordonnee c) {
 	    // Parcourir le tableau des tirs reï¿½us
 	    for (int i = 0; i < nbTirsRecus; i++) {
-	        // Vï¿½rifier si la coordonnï¿½e c correspond ï¿½ un tir reï¿½u
+	        // Verifier si la coordonnee c correspond a un tir recu
 	        if (tirsRecus[i].equals(c)) {
 	            return true;
 	        }
 	    }
-	    // Si aucune coordonnï¿½e ne correspond, retourner false
+	    // Si aucune coordonnee ne correspond, retourner false
 	    return false;
 	}
 	private boolean ajouteDansTirsRecus(Coordonnee c) {
-	    // Vï¿½rifier si la coordonnï¿½e est dans la grille
+	    // Verifier si la coordonnee est dans la grille
 	    if (!this.estDansGrille(c)) {
 	        return false;
 	    }
 
-	    // Vï¿½rifier si la coordonnï¿½e est dï¿½jï¿½ prï¿½sente dans tirsRecus
+	    // Verifier si la coordonnee est deja presente dans tirsRecus
 	    if (estDansTirsRecus(c)) {
-	        return false; // La coordonnï¿½e a dï¿½jï¿½ ï¿½tï¿½ tirï¿½e
+	        return false; // La coordonnee a dï¿½jï¿½ ï¿½tï¿½ tiree
 	    }
 
-	    // Ajouter la coordonnï¿½e dans le premier emplacement vide de tirsRecus
+	    // Ajouter la coordonnee dans le premier emplacement vide de tirsRecus
 	    for (int i = 0; i < this.tirsRecus.length; i++) {
 	        if (this.tirsRecus[i] == null) { // Si l'emplacement est vide
-	            this.tirsRecus[i] = c;  // Ajouter la coordonnï¿½e
-	            this.nbTirsRecus++;      // Augmenter le nombre de tirs reï¿½us
-	            return true;             // Retourner true pour indiquer que la liste a ï¿½tï¿½ modifiï¿½e
+	            this.tirsRecus[i] = c;  // Ajouter la coordonnee
+	            this.nbTirsRecus++;      // Augmenter le nombre de tirs recus
+	            return true;             // Retourner true pour indiquer que la liste a ete modifiee
 	        }
 	    }
 
 	    return false; // Si on a parcouru tout le tableau sans trouver de place
 	}
 	public boolean recoitTir(Coordonnee c) {
-	    // Vï¿½rifier si la coordonnï¿½e a dï¿½jï¿½ ï¿½tï¿½ reï¿½ue
+	    
+	    // Vérifier si la coordonnée est dans la grille
+	    if (!this.estDansGrille(c)) {
+	        return false;
+	    }
+
+	    // Vérifier si la coordonnée a déjà été reçue
 	    if (estDansTirsRecus(c)) {
-	        return false; // Si la coordonnï¿½e a dï¿½jï¿½ ï¿½tï¿½ reï¿½ue, ne rien faire et retourner false
+	        return false;
 	    }
 
-	    // Ajouter la coordonnï¿½e aux tirs reï¿½us
-	    if (!ajouteDansTirsRecus(c)) {
-	        return false; // Si l'ajout ï¿½choue (par exemple, tableau plein), retourner false
+	    // Ajouter la coordonnée aux tirs reçus
+	    if (ajouteDansTirsRecus(c)) {
+	        return true;
 	    }
-
-	    // Vï¿½rifier si la coordonnï¿½e touche un navire
-	    for (int i = 0; i < nbNavires; i++) {
-	        if (navires[i] != null && navires[i].recoitTir(c)) {
-	            // Si le navire contient la coordonnï¿½e et reï¿½oit le tir, retourner true
-	            return true;
-	        }
-	    }
-
-	    // Si aucun navire n'a ï¿½tï¿½ touchï¿½, retourner false
 	    return false;
 	}
+
 	public boolean estTouche(Coordonnee c) {
 	    // Parcourir tous les navires de la grille
 	    for (int i = 0; i < nbNavires; i++) {
 	        if (navires[i] != null && navires[i].contient(c)) {
-	            // Si la coordonnï¿½e est dans le navire et que ce navire a ï¿½tï¿½ touchï¿½ ï¿½ cette coordonnï¿½e
+	            // Si la coordonnee est dans le navire et que ce navire a ete touche a cette coordonnee
 	            if (navires[i].estTouche(c)) {
-	                return true; // Un navire a ï¿½tï¿½ touchï¿½ ï¿½ la coordonnï¿½e c
+	                return true; // Un navire a ete touche a la coordonnee c
 	            }
 	        }
 	    }
-	    // Aucun navire n'a ï¿½tï¿½ touchï¿½ ï¿½ la coordonnï¿½e c
+	    // Aucun navire n'a ete touche a la coordonnee c
 	    return false;
 	}
 	public boolean estALEau(Coordonnee c) {
-	    // Vï¿½rifier si la coordonnï¿½e est un tir reï¿½u
+	    // Verifier si la coordonnee est un tir recu
 	    if (!estDansTirsRecus(c)) {
 	        return false; // Si la coordonnï¿½e n'est pas un tir reï¿½u, retourner false
 	    }
 
-	    // Vï¿½rifier que le tir ne touche pas un navire
+	    // Verifier que le tir ne touche pas un navire
 	    if (estTouche(c)) {
-	        return false; // Si la coordonnï¿½e touche un navire, ce n'est pas de l'eau
+	        return false; // Si la coordonnee touche un navire, ce n'est pas de l'eau
 	    }
 
-	    // Si la coordonnï¿½e est un tir reï¿½u et ne touche pas un navire, c'est de l'eau
+	    // Si la coordonnee est un tir recu et ne touche pas un navire, c'est de l'eau
 	    return true;
 	}
 	public boolean estCoule(Coordonnee c) {

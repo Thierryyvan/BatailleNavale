@@ -15,7 +15,7 @@ public class Coordonnee implements Comparable<Coordonnee> {
     // Constructeur n°1
     // Permet de créer une coordonnée à partir de deux entiers
     public Coordonnee(int ligne, int colonne) {
-        if (ligne < 1 || colonne < 1) {
+        if (ligne < 0 || colonne < 0) {
             throw new IllegalArgumentException("Coordonnée invalide");
         }
         this.ligne = ligne;
@@ -39,16 +39,16 @@ public class Coordonnee implements Comparable<Coordonnee> {
         }
 
         // Colonne : A -> 1, B -> 2, ...
-        this.colonne = lettre - 'A' + 1;
+        this.colonne = lettre - 'A';
 
         try {
             // Ligne : partie numérique
-            this.ligne = Integer.parseInt(s.substring(1));
+            this.ligne = Integer.parseInt(s.substring(1)) - 1;
         } catch (NumberFormatException e) {
             throw new IllegalArgumentException("Numéro de ligne invalide");
         }
 
-        if (ligne < 1 || colonne < 1) {
+        if (ligne < 0 || colonne < 0) {
             throw new IllegalArgumentException("Coordonnée hors grille");
         }
     }

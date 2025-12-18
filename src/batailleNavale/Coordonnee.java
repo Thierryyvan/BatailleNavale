@@ -1,108 +1,80 @@
-// Déclaration du package : indique que cette classe appartient au package batailleNavale
 package batailleNavale;
 
-// Déclaration de la classe Coordonnee
-// Elle implémente l'interface Comparable<Coordonnee>
-// ce qui permet de comparer deux objets Coordonnee entre eux
 public class Coordonnee implements Comparable<Coordonnee> {
 
-    // Attribut représentant la ligne de la coordonnée
-    private int ligne;
+    private int ligne;   // numéro de ligne (0 à 25)
+    private int colonne; // numéro de colonne (0 à 25)
 
-    // Attribut représentant la colonne de la coordonnée
-    private int colonne;
-
-    // Constructeur n°1
-    // Permet de créer une coordonnée à partir de deux entiers
+    // Constructeur avec coordonnées numériques
     public Coordonnee(int ligne, int colonne) {
-        if (ligne < 0 || colonne < 0) {
-            throw new IllegalArgumentException("Coordonnée invalide");
+        if (ligne < 0 || ligne > 25 || colonne < 0 || colonne > 25) {
+            throw new IllegalArgumentException("La ligne et la colonne doivent être entre 0 et 25.");
         }
         this.ligne = ligne;
         this.colonne = colonne;
     }
 
-
-    // Constructeur n°2
-    // Permet de créer une coordonnée à partir d'une chaîne de caractères
-    // Exemple : "A5"
+    // Constructeur à partir d'une chaîne type "A1"
     public Coordonnee(String s) {
-        if (s == null || s.length() < 2) {
-            throw new IllegalArgumentException("Coordonnée invalide");
+        if (s == null || s.length() < 2 || s.length() > 3) {
+            throw new IllegalArgumentException("Coordonnée invalide : format attendu [A-Z][1-26]");
         }
 
         s = s.trim().toUpperCase();
-
         char lettre = s.charAt(0);
+
         if (lettre < 'A' || lettre > 'Z') {
-            throw new IllegalArgumentException("Lettre invalide");
+            throw new IllegalArgumentException("Colonne invalide : doit être une lettre de A à Z");
         }
 
-        // Colonne : A -> 1, B -> 2, ...
         this.colonne = lettre - 'A';
 
         try {
-            // Ligne : partie numérique
             this.ligne = Integer.parseInt(s.substring(1)) - 1;
         } catch (NumberFormatException e) {
-            throw new IllegalArgumentException("Numéro de ligne invalide");
+            throw new IllegalArgumentException("Numéro de ligne invalide : doit être un nombre");
         }
 
-        if (ligne < 0 || colonne < 0) {
-            throw new IllegalArgumentException("Coordonnée hors grille");
+        if (ligne < 0 || ligne > 25) {
+            throw new IllegalArgumentException("Numéro de ligne hors limites : doit être entre 1 et 26");
         }
     }
 
-
-    // Accesseur (getter) pour la ligne
+    // Getters
     public int getLigne() {
-        // Retourne la valeur de l'attribut ligne
         return ligne;
     }
 
-    // Accesseur (getter) pour la colonne
     public int getColonne() {
-        // Retourne la valeur de l'attribut colonne
         return colonne;
     }
 
-    // Redéfinition de la méthode toString()
-    // Permet d'afficher une coordonnée sous forme lisible
-    
+    // Affichage lisible pour le joueur
+    @Override
     public String toString() {
-        // Retourne une chaîne de caractères représentant la coordonnée
-        return "(" + ligne + "," + colonne + ")";
+        return "" + (char) ('A' + colonne) + (ligne + 1);
     }
 
- 
+    // Comparaison de coordonnées
+    @Override
     public boolean equals(Object obj) {
-    	if (!(obj instanceof Coordonnee)) return false;
-
-        // Conversion de l'objet en Coordonnee
+        if (!(obj instanceof Coordonnee)) return false;
         Coordonnee c = (Coordonnee) obj;
-
-        // Deux coordonnées sont égales si ligne et colonne sont identiques
-        return ligne == c.ligne && colonne == c.colonne;
+        return this.ligne == c.ligne && this.colonne == c.colonne;
     }
 
-   
+    // Coordonnée voisine (haut/bas/gauche/droite)
     public boolean voisine(Coordonnee c) {
-        if (this.colonne==c.colonne){
-            return (c.ligne==this.ligne+1) || (c.ligne==this.ligne-1);
-        }
-        if(c.ligne==this.ligne){
-            return (c.colonne==this.colonne+1) || (c.colonne==this.colonne-1);
-        }
-        return false;
+        if (c == null || this.equals(c)) return false;
+        return (this.colonne == c.colonne && (this.ligne == c.ligne + 1 || this.ligne == c.ligne - 1))
+                || (this.ligne == c.ligne && (this.colonne == c.colonne + 1 || this.colonne == c.colonne - 1));
     }
 
-
+    // Ordre pour Comparable
+    @Override
     public int compareTo(Coordonnee c) {
-        // Si les lignes sont différentes, on compare d'abord les lignes
-        if (this.ligne != c.ligne) {
-            return this.ligne - c.ligne;
-        }
-
+        int compareLigne = this.ligne - c.ligne;
+        if (compareLigne != 0) return compareLigne;
         return this.colonne - c.colonne;
     }
 }

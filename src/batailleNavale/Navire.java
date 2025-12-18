@@ -7,15 +7,22 @@ public class Navire {
     private Coordonnee[] partiesTouchees;
     private int nbTouchees;
 
+    // Constructeur
     public Navire(Coordonnee debut, int longueur, boolean estVertical) {
-        if (longueur <= 0) {
-            throw new IllegalArgumentException("La longueur d'un bateau ne peut pas être négative ou nulle : " + longueur);
+        if (longueur < 1 || longueur > 25)
+            throw new IllegalArgumentException("La longueur doit être comprise entre 1 et 25");
+
+        // Vérification débordement de la grille
+        if ((estVertical && (debut.getLigne() + longueur - 1 > 24)) || 
+            (!estVertical && (debut.getColonne() + longueur - 1 > 24))) {
+            throw new IllegalArgumentException("Le navire sort de la taille max de la grille");
         }
 
         this.debut = debut;
         this.nbTouchees = 0;
         this.partiesTouchees = new Coordonnee[longueur];
 
+        // Calcul de la coordonnée de fin
         if (estVertical) {
             this.fin = new Coordonnee(debut.getLigne() + longueur - 1, debut.getColonne());
         } else {
@@ -23,26 +30,7 @@ public class Navire {
         }
     }
 
-    private boolean estVertical() {
-        return debut.getColonne() == fin.getColonne();
-    }
-
-    @Override
-    public String toString() {
-        String axe;
-        int longueur;
-
-        if (estVertical()) {
-            axe = "vertical";
-            longueur = fin.getLigne() - debut.getLigne() + 1;
-        } else {
-            axe = "horizontal";
-            longueur = fin.getColonne() - debut.getColonne() + 1;
-        }
-
-        return "Navire(" + debut + ", " + longueur + ", " + axe + ")";
-    }
-
+    // Accesseurs
     public Coordonnee getDebut() {
         return debut;
     }
@@ -51,61 +39,48 @@ public class Navire {
         return fin;
     }
 
+    public Coordonnee[] getPartiesTouchees() {
+        return partiesTouchees;
+    }
+
+    // Vérifie si le navire est vertical
+    private boolean estVertical() {
+        return debut.getColonne() == fin.getColonne();
+    }
+
+    @Override
+    public String toString() {
+        String axe = estVertical() ? "vertical" : "horizontal";
+        int longueur = estVertical() ? (fin.getLigne() - debut.getLigne() + 1)
+                                     : (fin.getColonne() - debut.getColonne() + 1);
+        return "Navire(" + debut + ", " + longueur + ", " + axe + ")";
+    }
+
+    // Vérifie si une coordonnée appartient au navire
     public boolean contient(Coordonnee c) {
-        // (dans ce projet, debut est supposée "inférieure" à fin)
         return c.getLigne() >= debut.getLigne() && c.getLigne() <= fin.getLigne() &&
                c.getColonne() >= debut.getColonne() && c.getColonne() <= fin.getColonne();
     }
 
-    // true ssi this et n partagent au moins une case
+    // Vérifie si le navire chevauche un autre
     public boolean chevauche(Navire n) {
-        if (this.estVertical()) {
-            // on parcourt toutes les cases de this
-            for (int i = debut.getLigne(); i <= fin.getLigne(); i++) {
-                Coordonnee c = new Coordonnee(i, debut.getColonne());
-                if (n.contient(c)) return true;
-            }
-        } else {
-            for (int j = debut.getColonne(); j <= fin.getColonne(); j++) {
-                Coordonnee c = new Coordonnee(debut.getLigne(), j);
-                if (n.contient(c)) return true;
-            }
-        }
-        return false;
+        return n.getFin().getLigne() >= this.getDebut().getLigne() &&
+               this.getFin().getLigne() >= n.getDebut().getLigne() &&
+               n.getFin().getColonne() >= this.getDebut().getColonne() &&
+               this.getFin().getColonne() >= n.getDebut().getColonne();
     }
 
-    // true ssi this est adjacent à n (SANS diagonale)
+    // Vérifie si le navire touche (adjacent horizontal/vertical) un autre
     public boolean touche(Navire n) {
-        // si ils se chevauchent, c'est un conflit => on renvoie true
-        if (this.chevauche(n)) return true;
+        if (this.chevauche(n)) return true; // si chevauchement, renvoie vrai
 
-        // on parcourt toutes les cases de this, et on regarde si une est voisine d'une case de n
-        if (this.estVertical()) {
-            for (int i = debut.getLigne(); i <= fin.getLigne(); i++) {
-                Coordonnee cThis = new Coordonnee(i, debut.getColonne());
-                if (n.estVertical()) {
-                    for (int k = n.debut.getLigne(); k <= n.fin.getLigne(); k++) {
-                        Coordonnee cN = new Coordonnee(k, n.debut.getColonne());
-                        if (cThis.voisine(cN)) return true; // voisine = vertical/horizontal (pas diagonale)
-                    }
-                } else {
-                    for (int k = n.debut.getColonne(); k <= n.fin.getColonne(); k++) {
-                        Coordonnee cN = new Coordonnee(n.debut.getLigne(), k);
-                        if (cThis.voisine(cN)) return true;
-                    }
-                }
-            }
-        } else {
-            for (int j = debut.getColonne(); j <= fin.getColonne(); j++) {
-                Coordonnee cThis = new Coordonnee(debut.getLigne(), j);
-                if (n.estVertical()) {
-                    for (int k = n.debut.getLigne(); k <= n.fin.getLigne(); k++) {
-                        Coordonnee cN = new Coordonnee(k, n.debut.getColonne());
-                        if (cThis.voisine(cN)) return true;
-                    }
-                } else {
-                    for (int k = n.debut.getColonne(); k <= n.fin.getColonne(); k++) {
-                        Coordonnee cN = new Coordonnee(n.debut.getLigne(), k);
+        // Vérifie si une case de this est voisine d'une case de n
+        for (int iThisL = debut.getLigne(); iThisL <= fin.getLigne(); iThisL++) {
+            for (int jThisC = debut.getColonne(); jThisC <= fin.getColonne(); jThisC++) {
+                Coordonnee cThis = new Coordonnee(iThisL, jThisC);
+                for (int iN = n.debut.getLigne(); iN <= n.fin.getLigne(); iN++) {
+                    for (int jN = n.debut.getColonne(); jN <= n.fin.getColonne(); jN++) {
+                        Coordonnee cN = new Coordonnee(iN, jN);
                         if (cThis.voisine(cN)) return true;
                     }
                 }
@@ -114,31 +89,32 @@ public class Navire {
         return false;
     }
 
+    // Reçoit un tir sur une coordonnée
     public boolean recoitTir(Coordonnee c) {
         if (this.contient(c)) {
-            // si déjà touché, on renvoie true mais on ne recompte pas
             if (!this.estTouche(c)) {
                 partiesTouchees[nbTouchees] = c;
-                nbTouchees = nbTouchees + 1;
+                nbTouchees++;
             }
             return true;
         }
         return false;
     }
 
+    // Vérifie si le navire a été touché à une coordonnée
     public boolean estTouche(Coordonnee c) {
         for (int i = 0; i < nbTouchees; i++) {
-            if (partiesTouchees[i].equals(c)) {
-                return true;
-            }
+            if (partiesTouchees[i].equals(c)) return true;
         }
         return false;
     }
 
+    // Vérifie si le navire a été touché au moins une fois
     public boolean estTouche() {
         return nbTouchees > 0;
     }
 
+    // Vérifie si le navire est coulé
     public boolean estCoule() {
         return nbTouchees == partiesTouchees.length;
     }

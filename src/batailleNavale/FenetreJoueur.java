@@ -1,83 +1,55 @@
 package batailleNavale;
 
-import java.awt.Color;
-import java.awt.EventQueue;
-import java.awt.FlowLayout;
-import java.awt.Font;
-import java.awt.GridLayout;
-
-import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.SwingConstants;
+import java.awt.*;
+import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 
 public class FenetreJoueur extends JFrame {
 
     private static final long serialVersionUID = 1L;
 
-    private JPanel contentPane;
-
-    // Grille de défense (navires + tirs reçus)
     private GrilleNavaleGraphique grilleDefense;
-
-    // Grille d'attaque (où le joueur clique pour tirer)
     private GrilleGraphique grilleTirs;
 
     public FenetreJoueur() {
-        this("Nom du joueur", 10);
+        this("Nom du joueur", 10, new int[]{1,2,3,4});
     }
 
     public FenetreJoueur(String nom, int taille) {
+        this(nom, taille, new int[]{1,2,3,4});
+    }
+
+    public FenetreJoueur(String nom, int taille, int[] navires) {
+
+        setTitle("Centre naval de " + nom);
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-        setTitle(nom);
+        setSize(900, 450);
+        setLocationRelativeTo(null);
 
-        // Taille de la fenêtre
-        if (taille < 19) {
-            setBounds(45 * taille, 45 * taille, 90 * taille, 53 * taille);
-        } else {
-            setBounds(45 * taille, 45 * taille, 90 * taille, 47 * taille);
-        }
-
-        contentPane = new JPanel();
-        contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
-        contentPane.setLayout(new GridLayout(1, 2));
+        JPanel contentPane = new JPanel(new GridLayout(1, 2, 10, 10));
+        contentPane.setBorder(new EmptyBorder(10, 10, 10, 10));
         setContentPane(contentPane);
 
-        // Création des grilles
+        // Grilles
         grilleTirs = new GrilleGraphique(taille);
         grilleDefense = new GrilleNavaleGraphique(taille);
 
-        // Gestion des clics
+        // PLACEMENT DES NAVIRES (OBLIGATOIRE)
+        grilleDefense.placementAuto(navires);
+
+        // Activation clics
         grilleTirs.setClicActive(true);
         grilleDefense.getGrilleGraphique().setClicActive(false);
 
-        // Coloration de la grille de défense
-        grilleDefense.getGrilleGraphique().colorie(
-                new Coordonnee(0, 0),
-                new Coordonnee(taille - 1, taille - 1),
-                new Color(0, 51, 102)
-        );
+        // ----- Panel Attaque -----
+        JPanel panelAttaque = new JPanel(new BorderLayout());
+        panelAttaque.add(new JLabel("Grille d'attaque", JLabel.CENTER), BorderLayout.NORTH);
+        panelAttaque.add(grilleTirs, BorderLayout.CENTER);
 
-        // ===== Panel attaque =====
-        JPanel panelAttaque = new JPanel(new FlowLayout(FlowLayout.CENTER, 5, 5));
-
-        JLabel lblAttaque = new JLabel("Grille d'attaque");
-        lblAttaque.setFont(new Font("Dialog", Font.BOLD, 14));
-        lblAttaque.setHorizontalAlignment(SwingConstants.CENTER);
-
-        panelAttaque.add(lblAttaque);
-        panelAttaque.add(grilleTirs);
-
-        // ===== Panel défense =====
-        JPanel panelDefense = new JPanel(new FlowLayout(FlowLayout.CENTER, 5, 5));
-
-        JLabel lblDefense = new JLabel("Grille de défense");
-        lblDefense.setFont(new Font("Dialog", Font.BOLD, 14));
-        lblDefense.setHorizontalAlignment(SwingConstants.CENTER);
-
-        panelDefense.add(lblDefense);
-        panelDefense.add(grilleDefense.getGrilleGraphique());
+        // ----- Panel Défense -----
+        JPanel panelDefense = new JPanel(new BorderLayout());
+        panelDefense.add(new JLabel("Grille de défense", JLabel.CENTER), BorderLayout.NORTH);
+        panelDefense.add(grilleDefense.getGrilleGraphique(), BorderLayout.CENTER);
 
         contentPane.add(panelAttaque);
         contentPane.add(panelDefense);
@@ -91,11 +63,9 @@ public class FenetreJoueur extends JFrame {
         return grilleDefense;
     }
 
-    // Test
     public static void main(String[] args) {
-        EventQueue.invokeLater(() -> {
-            FenetreJoueur f = new FenetreJoueur("oui", 18);
-            f.setVisible(true);
+        SwingUtilities.invokeLater(() -> {
+            new FenetreJoueur("Test", 10).setVisible(true);
         });
     }
 }

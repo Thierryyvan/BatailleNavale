@@ -1,178 +1,110 @@
 package batailleNavale;
 
 public class JoueurAutoNiveau2 extends JoueurAuto {
+	boolean[][] casesPossibles; // une matrice qui indique les cases touchables (dont la valeur est true)
+	protected GrilleNavale grille;
+	private boolean regarderVoisine = false;
+	private Coordonnee derniereCaseTouchee;
 
-    private boolean[][] dejaTire;
+	public JoueurAutoNiveau2(GrilleNavale g, String nom) {
+		super(g, nom);
+		this.grille=g;
+		casesPossibles = new boolean[g.getTaille()][g.getTaille()];
+		for (int i = 0; i < casesPossibles.length; i++)
+			for (int j = 0; j < casesPossibles.length; j++)
+				casesPossibles[i][j] = true;
+	}
 
-    private boolean navireAdetruire = false;
-    private boolean deuxiemeTouchee = false;
+	public JoueurAutoNiveau2(GrilleNavale g) {
+		this(g,"NomJoueur");
+	}
 
-    private Coordonnee premiereNavire = null;
-    private Coordonnee courante;
+	@Override
+	public Coordonnee choixAttaque() {
+		int Ligne = 0, Colonne = 0;
 
-    private int essai = 0;
-    private char sens;
-    private int etatCourant;
+		// Si il n'y a pas de coordonne voisine a attaquer
+		if (regarderVoisine) {
+			Ligne = derniereCaseTouchee.getLigne();
+			Colonne = derniereCaseTouchee.getColonne();
 
-    public JoueurAutoNiveau2(GrilleNavale g, String nom) {
-        super(g, nom);
-        dejaTire = new boolean[getTailleGrille()][getTailleGrille()];
-    }
+			if (Ligne+1 < casesPossibles.length && casesPossibles[Ligne+1][Colonne])
+				Ligne += 1;
+			else if (Ligne-1 >= 0 && casesPossibles[Ligne-1][Colonne])
+				Ligne -= 1;
+			else if (Colonne+1 < casesPossibles.length && casesPossibles[Ligne][Colonne+1])
+				Colonne += 1;
+			else if (Colonne-1 >= 0 && casesPossibles[Ligne][Colonne-1])
+				Colonne -= 1;
+			else
+				regarderVoisine = false;
+		}
 
-    public JoueurAutoNiveau2(GrilleNavale g) {
-        super(g);
-        dejaTire = new boolean[getTailleGrille()][getTailleGrille()];
-    }
+		 if (!regarderVoisine) {
+			do {
+				Ligne = (int) (Math.random() * (this.getTailleGrille()));
+				Colonne = (int) (Math.random() * (this.getTailleGrille()));
+			} while (!casesPossibles[Ligne][Colonne]);
+		 }
 
-    @Override
-    protected void retourAttaque(Coordonnee c, int etat) {
-        courante = c;
-        etatCourant = etat;
+		casesPossibles[Ligne][Colonne] = false;
+		Coordonnee coordonneeAttaquee = new Coordonnee(Ligne, Colonne);
+		return coordonneeAttaquee;
+	}
 
-        if (etat == TOUCHE && !navireAdetruire) {
-            navireAdetruire = true;
-            premiereNavire = new Coordonnee(c.getLigne(), c.getColonne());
-        } 
-        else if (etat == TOUCHE && navireAdetruire && !deuxiemeTouchee) {
-            deuxiemeTouchee = true;
-        } 
-        else if (etat == COULE) {
-            navireAdetruire = false;
-            deuxiemeTouchee = false;
-            essai = 0;
-        }
-    }
+	@Override
+	protected void retourAttaque(Coordonnee c, int etat) {
+		String resultat = "";
 
-    @Override
-    public Coordonnee choixAttaque() {
+		if (etat == Joueur.TOUCHE) {
+			resultat = "Vous avez touché un navire ";
+			regarderVoisine = true;
+			derniereCaseTouchee = c;
+		} else if (etat == Joueur.COULE) {
+			resultat = "Vous avez coulé un navire ";
+			regarderVoisine = false;
+			setVoisineFalse(c);
+		} else if (etat == Joueur.A_L_EAU) {
+			resultat = "Dommage, c'est a l'eau";
+		} else if (etat == Joueur.GAMEOVER) {
+			resultat = "Vous avez gagné \\n ***tin tin tin tin tin tin tiinnnnnnn***";
+			System.out.println("Attaque en " + c + ": " + resultat);
+		}
 
-        if (!navireAdetruire) {
-            return tirAleatoire();
-        }
+		//System.out.println("Attaque en " + c + ": " + resultat);
 
-        if (!deuxiemeTouchee) {
-            return chercherOrientation();
-        }
+	}
 
-        return choixSuivant(sens);
-    }
+	@Override
+	protected void retourDefense(Coordonnee c, int etat) {
+		String resultat = "";
 
-    private Coordonnee tirAleatoire() {
-        for (int i = 0; i < getTailleGrille(); i++) {
-            for (int j = 0; j < getTailleGrille(); j++) {
-                if (!dejaTire[i][j]) {
-                    dejaTire[i][j] = true;
-                    return new Coordonnee(i, j);
-                }
-            }
-        }
-        return null;
-    }
+		if (etat == Joueur.TOUCHE) {
+			resultat = "Le navire a été touché";
+		} else if (etat == Joueur.COULE) {
+			resultat = "Le navire a coulé";
+		} else if (etat == Joueur.A_L_EAU) {
+			resultat = "C'est à l'eau !";
+		} else if (etat == Joueur.GAMEOVER) {
+			resultat = "Vous avez perdu \\n **** bruit de violon ***";
+			System.out.println("Attaque de l'ennemi en " + c + ": " + resultat);
+		}
 
-    private Coordonnee chercherOrientation() {
+		//System.out.println("Attaque de l'ennemi en " + c + ": " + resultat);
+	}
 
-        if (essai == 0) {
-            essai++;
-            if (!toutEnHaut(premiereNavire) && !dejaTire[premiereNavire.getLigne() - 1][premiereNavire.getColonne()]) {
-                sens = 'n';
-                return nord(premiereNavire);
-            }
-        }
+	private void setVoisineFalse(Coordonnee c) {
+		int ligne = c.getLigne();
+		int colonne = c.getColonne();
 
-        if (essai == 1) {
-            essai++;
-            if (!toutEnBas(premiereNavire) && !dejaTire[premiereNavire.getLigne() + 1][premiereNavire.getColonne()]) {
-                sens = 's';
-                return sud(premiereNavire);
-            }
-        }
+		setFalse(ligne-1,colonne);
+		setFalse(ligne,colonne+1);
+		setFalse(ligne+1,colonne);
+		setFalse(ligne,colonne-1);
+	}
 
-        if (essai == 2) {
-            essai++;
-            if (!toutAgauche(premiereNavire) && !dejaTire[premiereNavire.getLigne()][premiereNavire.getColonne() - 1]) {
-                sens = 'o';
-                return ouest(premiereNavire);
-            }
-        }
-
-        if (essai == 3) {
-            essai++;
-            if (!toutAdroite(premiereNavire) && !dejaTire[premiereNavire.getLigne()][premiereNavire.getColonne() + 1]) {
-                sens = 'e';
-                return est(premiereNavire);
-            }
-        }
-
-        return null;
-    }
-
-    public Coordonnee choixSuivant(char c) {
-
-        if (c == 'n') {
-            if (toutEnHaut(courante) || etatCourant == A_L_EAU || dejaTire[courante.getLigne() - 1][courante.getColonne()]) {
-                sens = 's';
-                return sud(premiereNavire);
-            }
-            return nord(courante);
-        }
-
-        if (c == 's') {
-            if (toutEnBas(courante) || etatCourant == A_L_EAU || dejaTire[courante.getLigne() + 1][courante.getColonne()]) {
-                sens = 'n';
-                return nord(premiereNavire);
-            }
-            return sud(courante);
-        }
-
-        if (c == 'o') {
-            if (toutAgauche(courante) || etatCourant == A_L_EAU || dejaTire[courante.getLigne()][courante.getColonne() - 1]) {
-                sens = 'e';
-                return est(premiereNavire);
-            }
-            return ouest(courante);
-        }
-
-        if (toutAdroite(courante) || etatCourant == A_L_EAU || dejaTire[courante.getLigne()][courante.getColonne() + 1]) {
-            sens = 'o';
-            return ouest(premiereNavire);
-        }
-
-        return est(courante);
-    }
-
-    public Coordonnee nord(Coordonnee c) {
-        dejaTire[c.getLigne() - 1][c.getColonne()] = true;
-        return new Coordonnee(c.getLigne() - 1, c.getColonne());
-    }
-
-    public Coordonnee sud(Coordonnee c) {
-        dejaTire[c.getLigne() + 1][c.getColonne()] = true;
-        return new Coordonnee(c.getLigne() + 1, c.getColonne());
-    }
-
-    public Coordonnee ouest(Coordonnee c) {
-        dejaTire[c.getLigne()][c.getColonne() - 1] = true;
-        return new Coordonnee(c.getLigne(), c.getColonne() - 1);
-    }
-
-    public Coordonnee est(Coordonnee c) {
-        dejaTire[c.getLigne()][c.getColonne() + 1] = true;
-        return new Coordonnee(c.getLigne(), c.getColonne() + 1);
-    }
-
-    public boolean toutAdroite(Coordonnee c) {
-        return c.getColonne() == getTailleGrille() - 1;
-    }
-
-    public boolean toutAgauche(Coordonnee c) {
-        return c.getColonne() == 0;
-    }
-
-    public boolean toutEnHaut(Coordonnee c) {
-        return c.getLigne() == 0;
-    }
-
-    public boolean toutEnBas(Coordonnee c) {
-        return c.getLigne() == getTailleGrille() - 1;
-    }
+	private void setFalse(int l, int c) {
+		if (l < grille.getTaille() &&  c < grille.getTaille() && l >= 0 && c >= 0)
+			casesPossibles[l][c] = false;
+	}
 }

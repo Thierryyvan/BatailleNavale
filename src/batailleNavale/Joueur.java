@@ -59,21 +59,28 @@ public abstract class Joueur {
         deroulementJeu(this, j);
     }
 
-    private static void deroulementJeu(Joueur attaquant, Joueur defenseur) {
-        int res = 0;
+    private static void deroulementJeu(Joueur j1, Joueur j2) {
+        Joueur attaquant = j1;
+        Joueur defenseur = j2;
 
-        while (res != GAMEOVER) {
+        while (true) {
             Coordonnee c = attaquant.choixAttaque();
-            res = defenseur.defendre(c);
+            int res = defenseur.defendre(c);
 
             attaquant.retourAttaque(c, res);
             defenseur.retourDefense(c, res);
 
+            if (res == GAMEOVER) {
+                break;
+            }
+
+            // échange des rôles
             Joueur tmp = attaquant;
             attaquant = defenseur;
             defenseur = tmp;
         }
     }
+
 
     protected abstract void retourAttaque(Coordonnee c, int etat);
 

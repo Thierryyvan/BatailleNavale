@@ -26,7 +26,7 @@ public class GrilleNavaleGraphique extends GrilleNavale {
         if (!super.ajouteNavire(n)) return false;
 
         // Colorie le navire en gris clair
-        grille.colorie(n.getDebut(), n.getFin(), Color.LIGHT_GRAY);
+        grille.colorie(n.getDebut(), n.getFin(), Color.BLACK);
         return true;
     }
 

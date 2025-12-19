@@ -8,15 +8,15 @@ import javax.swing.border.TitledBorder;
 public class BatailleNavale {
 
     // Couleurs et polices
-    public static final Color BG_COLOR = new Color(245, 246, 251);
-    public static final Color PANEL_COLOR = new Color(211, 217, 234);
-    private static final Color BUTTON_COLOR = new Color(41, 79, 107);
-    private static final Color BUTTON_TEXT_COLOR = Color.WHITE;
-    private static final Color ERROR_COLOR = Color.RED;
+    protected static final Color BG_COLOR = new Color(245, 246, 251);
+    protected static final Color PANEL_COLOR = new Color(211, 217, 234);
+    protected static final Color BUTTON_COLOR = new Color(41, 79, 107);
+    protected static final Color BUTTON_TEXT_COLOR = Color.WHITE;
+    protected static final Color ERROR_COLOR = Color.RED;
 
-    private static final Font LABEL_FONT = new Font("Fira Sans", Font.PLAIN, 12);
-    public static final Font PANEL_FONT = new Font("Fira Sans", Font.BOLD, 12);
-    private static final Font BUTTON_FONT = new Font("Fira Sans", Font.BOLD, 13);
+    protected static final Font LABEL_FONT = new Font("Fira Sans", Font.PLAIN, 12);
+    protected static final Font PANEL_FONT = new Font("Fira Sans", Font.BOLD, 12);
+    protected static final Font BUTTON_FONT = new Font("Fira Sans", Font.BOLD, 13);
 
     private JFrame frame;
     private JTextField textTailleGrille;

@@ -4,6 +4,7 @@ import java.util.Scanner;
 
 public class JoueurTexte extends JoueurAvecGrille {
 	private Scanner sc;
+	GrilleNavale grille;
 	
 	public JoueurTexte(GrilleNavale g, String nom) {
 		super(g, nom);
@@ -47,18 +48,24 @@ public class JoueurTexte extends JoueurAvecGrille {
 	    }
 
 	}
+	
 	@Override
 	public Coordonnee choixAttaque() {
-		while (true) {
-			System.out.println("Entrez les coordonees de votre attaque (Ex: B7) : ");
-			String s = sc.nextLine().trim().toUpperCase();
-			try {
-				return new Coordonnee(s);
-			} catch (IllegalArgumentException e) {
-				System.out.println("Coordonnee invalide. Veuillez reessayer");
-			}
-		}
-		
-		
+	    while (true) {
+
+	        System.out.println("\n--- " + getNom() + " ---");
+	        System.out.println("Votre grille :");
+	        System.out.println(getGrille()); // GrilleNavale.toString()
+
+	        System.out.println("Entrez les coordonnées de votre attaque (Ex: B7) : ");
+	        String s = sc.nextLine().trim().toUpperCase();
+
+	        try {
+	            return new Coordonnee(s);
+	        } catch (IllegalArgumentException e) {
+	            System.out.println("Coordonnée invalide. Veuillez réessayer.");
+	        }
+	    }
 	}
+
 }
